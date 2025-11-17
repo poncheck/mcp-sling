@@ -179,6 +179,16 @@ npm run watch
 npm run dev
 ```
 
+### Test Authentication
+
+To verify your credentials work before using with Claude:
+
+```bash
+node test-auth.js
+```
+
+This will attempt to authenticate and show detailed debug information.
+
 ## Permissions
 
 Your API access level matches your Sling user permissions:
@@ -187,10 +197,32 @@ Your API access level matches your Sling user permissions:
 
 ## Troubleshooting
 
+### "No authorization token received from Sling API"
+
+The server now includes detailed debug logging. Check your MCP server logs (Claude Desktop Developer Console) for:
+- Response status code
+- Response headers
+- Response body
+
+This will help identify where the token should be.
+
+**Quick fixes:**
+1. Verify credentials in `.env` are correct (no extra quotes/spaces)
+2. Test login with curl:
+   ```bash
+   curl -i -X POST https://api.getsling.com/account/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"your@email.com","password":"password"}'
+   ```
+3. Look for `authorization:` header in the response
+
+**For detailed troubleshooting steps, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**
+
 ### Authentication Issues
 - Verify your email and password are correct in `.env`
 - Check that you can log in to Sling web app with these credentials
 - Ensure you're using the correct server (api vs test-api)
+- Make sure you're not using OAuth provider credentials (Google/Facebook)
 
 ### API Errors
 - Check the error message for specific details
@@ -201,6 +233,17 @@ Your API access level matches your Sling user permissions:
 - Verify you have internet connectivity
 - Check if api.getsling.com is accessible
 - Try using SLING_SERVER=test-api for the staging environment
+
+### Debugging
+
+The server logs detailed authentication information to stderr:
+- All response headers from Sling API
+- Response body content
+- Token extraction attempts
+
+View these logs in:
+- **Claude Desktop**: Help → Developer Tools → Console
+- **Terminal**: stderr output from the MCP server process
 
 ## License
 
