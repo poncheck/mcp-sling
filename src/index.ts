@@ -15,17 +15,22 @@ import { SlingClient } from './client.js';
 dotenv.config();
 
 // Validate required environment variables
-const requiredEnvVars = ['SLING_EMAIL', 'SLING_PASSWORD'];
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    throw new Error(`Missing required environment variable: ${envVar}`);
-  }
+// Either SLING_TOKEN or (SLING_EMAIL + SLING_PASSWORD) must be provided
+const hasToken = !!process.env.SLING_TOKEN;
+const hasCredentials = !!(process.env.SLING_EMAIL && process.env.SLING_PASSWORD);
+
+if (!hasToken && !hasCredentials) {
+  throw new Error(
+    'Missing required environment variables. ' +
+    'Provide either SLING_TOKEN or both SLING_EMAIL and SLING_PASSWORD'
+  );
 }
 
 // Initialize auth manager and client
 const authManager = new SlingAuthManager({
-  email: process.env.SLING_EMAIL!,
-  password: process.env.SLING_PASSWORD!,
+  token: process.env.SLING_TOKEN,
+  email: process.env.SLING_EMAIL,
+  password: process.env.SLING_PASSWORD,
   server: process.env.SLING_SERVER || 'api',
 });
 

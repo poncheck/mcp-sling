@@ -1,10 +1,51 @@
 # Troubleshooting Guide
 
+## ⚠️ IMPORTANT: CAPTCHA Issue
+
+**As of November 2024, Sling requires CAPTCHA for the `/account/login` endpoint.**
+
+**Error you'll see:**
+```json
+{
+  "message": "Missing captcha response"
+}
+```
+
+**Solution:** Use a pre-obtained token from your browser instead of email/password.
+
+👉 **See [TOKEN_GUIDE.md](./TOKEN_GUIDE.md) for detailed instructions** on how to get your token.
+
+---
+
 ## Common Issues and Solutions
+
+### "Missing captcha response"
+
+**Error:**
+```
+Login failed with status 400: {"message":"Missing captcha response"}
+```
+
+**Cause:** Sling now requires CAPTCHA for direct API login.
+
+**Solution:**
+1. Get your authorization token from the browser (see [TOKEN_GUIDE.md](./TOKEN_GUIDE.md))
+2. Set `SLING_TOKEN` in your `.env` file
+3. Remove or comment out `SLING_EMAIL` and `SLING_PASSWORD`
+
+Example `.env`:
+```env
+SLING_TOKEN=Token abc123def456...
+SLING_SERVER=api
+```
+
+---
 
 ### "No authorization token received from Sling API"
 
 This error occurs when the server cannot extract the authentication token from Sling's response.
+
+**Note:** This error is now less common since we recommend using pre-obtained tokens.
 
 #### Debugging Steps:
 
@@ -64,13 +105,13 @@ SLING_SERVER=test-api
 
 ### "Failed to authenticate with Sling API: Error 401"
 
-This means your credentials are incorrect.
+This means your token is invalid or expired.
 
 **Solutions:**
-1. Verify email and password are correct
-2. Check for typos in `.env` file
-3. Test login through web interface first
-4. Make sure you're not using OAuth provider credentials (Google/Facebook)
+1. Get a new token from your browser (see [TOKEN_GUIDE.md](./TOKEN_GUIDE.md))
+2. Verify you copied the entire token (including "Token" prefix if present)
+3. Check for extra spaces or line breaks in your `.env` file
+4. Make sure the token isn't wrapped in quotes
 
 ---
 

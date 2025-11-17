@@ -2,6 +2,8 @@
 
 Model Context Protocol (MCP) server for the Sling API - a comprehensive scheduling and workforce management platform.
 
+> **Quick Start:** New to this? See [QUICK_START.md](./QUICK_START.md) for a 5-minute setup guide!
+
 ## Features
 
 This MCP server provides tools to interact with all major Sling API endpoints:
@@ -52,15 +54,20 @@ npm install
 npm run build
 ```
 
-4. Create a `.env` file with your Sling credentials:
+4. Get your Sling authorization token:
+
+**IMPORTANT:** Due to CAPTCHA requirements on the Sling login endpoint, you need to obtain your authorization token from your browser.
+
+Follow the detailed guide: **[TOKEN_GUIDE.md](./TOKEN_GUIDE.md)**
+
+5. Create a `.env` file with your token:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add your credentials:
+Edit `.env` and add your token:
 ```env
-SLING_EMAIL=your-email@example.com
-SLING_PASSWORD=your-password
+SLING_TOKEN=your-token-from-browser
 SLING_SERVER=api
 ```
 
@@ -68,9 +75,15 @@ SLING_SERVER=api
 
 ### Environment Variables
 
-- **SLING_EMAIL** (required) - Your Sling account email
-- **SLING_PASSWORD** (required) - Your Sling account password
+**Recommended approach (avoids CAPTCHA):**
+- **SLING_TOKEN** (required) - Your Sling authorization token from browser
+  - See [TOKEN_GUIDE.md](./TOKEN_GUIDE.md) for instructions
 - **SLING_SERVER** (optional) - API server to use (default: "api", use "test-api" for staging)
+
+**Alternative (requires CAPTCHA - not recommended):**
+- **SLING_EMAIL** - Your Sling account email
+- **SLING_PASSWORD** - Your Sling account password
+- Note: Currently not working due to CAPTCHA requirement on `/account/login` endpoint
 
 ### Claude Desktop Configuration
 
@@ -79,6 +92,7 @@ Add this to your Claude Desktop configuration file:
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
+**Recommended: Using token**
 ```json
 {
   "mcpServers": {
@@ -86,16 +100,14 @@ Add this to your Claude Desktop configuration file:
       "command": "node",
       "args": ["/absolute/path/to/mcp-sling/dist/index.js"],
       "env": {
-        "SLING_EMAIL": "your-email@example.com",
-        "SLING_PASSWORD": "your-password"
+        "SLING_TOKEN": "your-token-from-browser"
       }
     }
   }
 }
 ```
 
-Alternatively, if you have a `.env` file configured, you can use:
-
+**Alternative: Using .env file**
 ```json
 {
   "mcpServers": {
@@ -106,6 +118,7 @@ Alternatively, if you have a `.env` file configured, you can use:
   }
 }
 ```
+(Requires `.env` file with `SLING_TOKEN` configured)
 
 ## Usage Examples
 
@@ -149,12 +162,15 @@ Note: The Sling API uses email/password authentication as documented in their [o
 
 ### About CAPTCHA
 
-**Important:** The Sling web UI (browser) may have CAPTCHA protection, but the **API endpoint does not require CAPTCHA**. This MCP server uses the programmatic API endpoint (`/account/login`), which accepts direct email/password authentication without CAPTCHA challenges. This is the official method documented by Sling for API integrations.
+**Important Update:** As of November 2024, Sling has added CAPTCHA protection to the `/account/login` API endpoint. This means direct email/password authentication no longer works without solving a CAPTCHA challenge.
 
-If you encounter authentication issues, verify:
-- Your email and password are correct
-- Your account is not locked or suspended
-- You're using valid Sling credentials (not OAuth provider credentials)
+**Solution:** Use a pre-obtained authorization token from your browser instead. See [TOKEN_GUIDE.md](./TOKEN_GUIDE.md) for detailed instructions.
+
+**Why this approach works:**
+- Tokens obtained from browser sessions don't require CAPTCHA
+- Tokens typically remain valid for weeks or months
+- You only need to get a new token when it expires or you change your password
+- This is the recommended approach until Sling provides an alternative API authentication method
 
 ## API Documentation
 

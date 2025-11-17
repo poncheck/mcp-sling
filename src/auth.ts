@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 export interface SlingAuthConfig {
-  email: string;
-  password: string;
+  email?: string;
+  password?: string;
+  token?: string; // Pre-obtained token (recommended due to captcha requirements)
   server?: string;
 }
 
@@ -99,19 +100,47 @@ export class SlingAuthManager {
   private token: string | null = null;
   private tokenExpiresAt: Date | null = null;
   private config: SlingAuthConfig;
+  private usePreObtainedToken: boolean = false;
 
   constructor(config: SlingAuthConfig) {
     this.config = config;
+
+    // If a token is provided directly, use it
+    if (config.token) {
+      this.token = config.token.trim();
+      this.usePreObtainedToken = true;
+      // Tokens from browser typically last weeks/months
+      // Set a very long expiry (30 days), user can manually refresh if needed
+      this.tokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      console.error('Using pre-obtained token from configuration');
+    } else if (!config.email || !config.password) {
+      throw new Error(
+        'Either provide a token (SLING_TOKEN) or email+password (SLING_EMAIL and SLING_PASSWORD)'
+      );
+    }
   }
 
   async getToken(): Promise<string> {
-    // Check if we have a valid token
+    // If using a pre-obtained token, just return it
+    if (this.usePreObtainedToken && this.token) {
+      return this.token;
+    }
+
+    // Check if we have a valid cached token
     if (this.token && this.tokenExpiresAt && this.tokenExpiresAt > new Date()) {
       return this.token;
     }
 
     // Login and get a new token
-    this.token = await loginToSling(this.config);
+    if (!this.config.email || !this.config.password) {
+      throw new Error('Email and password are required for login-based authentication');
+    }
+
+    this.token = await loginToSling({
+      email: this.config.email,
+      password: this.config.password,
+      server: this.config.server,
+    });
 
     // Sling tokens typically expire after some time, we'll refresh proactively
     // Set expiry to 1 hour from now (you may need to adjust based on actual token lifetime)
@@ -122,8 +151,14 @@ export class SlingAuthManager {
 
   /**
    * Force a token refresh
+   * Note: This will not work if using a pre-obtained token
    */
   async refreshToken(): Promise<string> {
+    if (this.usePreObtainedToken) {
+      throw new Error(
+        'Cannot refresh a pre-obtained token. Please get a new token from your browser.'
+      );
+    }
     this.token = null;
     this.tokenExpiresAt = null;
     return this.getToken();
