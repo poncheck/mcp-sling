@@ -147,6 +147,15 @@ This server handles authentication automatically using your configured credentia
 
 Note: The Sling API uses email/password authentication as documented in their [official examples](https://github.com/getsling/getsling-api-docs).
 
+### About CAPTCHA
+
+**Important:** The Sling web UI (browser) may have CAPTCHA protection, but the **API endpoint does not require CAPTCHA**. This MCP server uses the programmatic API endpoint (`/account/login`), which accepts direct email/password authentication without CAPTCHA challenges. This is the official method documented by Sling for API integrations.
+
+If you encounter authentication issues, verify:
+- Your email and password are correct
+- Your account is not locked or suspended
+- You're using valid Sling credentials (not OAuth provider credentials)
+
 ## API Documentation
 
 For detailed information about the Sling API endpoints and data formats, refer to:
